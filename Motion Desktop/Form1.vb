@@ -37,9 +37,6 @@ Public Class Form1
         AxWindowsMediaPlayer1.UseWaitCursor = False
         AxWindowsMediaPlayer1.settings.setMode("loop", True)
 
-        'Cursor.Current = Cursors.Default
-
-
         DisplayToolStripComboBox.BeginUpdate()
         For Each Display As Display In Display.GetDisplays()
             If Display.IsGDIPrimary Then
@@ -80,7 +77,6 @@ Public Class Form1
         If e.newState = 3 Then
             Timer1.Enabled = True
             If MuteToolStripMenuItem.Checked Then
-                'Console.WriteLine("AxWindowsMediaPlayer1_PlayStateChange")
                 AxWindowsMediaPlayer1.settings.mute = True
             End If
         Else
@@ -117,15 +113,15 @@ Public Class Form1
 
     ' Form1 - Activated
     Private Sub Form1_Activated(sender As Object, e As EventArgs) Handles Me.Activated
-        'Console.WriteLine("Me.Activated")
         SetFormPosition(Me.Handle, CType(HWND_BOTTOM, IntPtr))
+        'Console.WriteLine("Me.Activated")
     End Sub
 
     ' Timer1 - Tick
     Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick
         If AxWindowsMediaPlayer1.Ctlcontrols.currentPosition >= AxWindowsMediaPlayer1.Ctlcontrols.currentItem.duration - 0.1 Then
             AxWindowsMediaPlayer1.Ctlcontrols.currentPosition = 0
-            Console.WriteLine("Replay")
+            'Console.WriteLine("Replay")
         End If
     End Sub
 
@@ -193,27 +189,5 @@ Public Class Form1
     ' ExitToolStripMenuItem - Click
     Private Sub ExitToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ExitToolStripMenuItem.Click
         Me.Close()
-    End Sub
-
-    '
-    '
-    '//Test Code
-    '
-    '
-
-    'DisplaySettingsChanged()
-    'Public Sub DisplaySettingsChanged(ByVal sender As Object, ByVal e As EventArgs)
-    'Console.WriteLine("DisplaySettingsChanged")
-    'End Sub
-
-    ' AxWindowsMediaPlayer1 - StatusChange
-    Private Sub AxWindowsMediaPlayer1_StatusChange(sender As Object, e As EventArgs) Handles AxWindowsMediaPlayer1.StatusChange
-        'Console.WriteLine(AxWindowsMediaPlayer1.status.ToString)
-    End Sub
-
-    ' Form1 - Move
-    Private Sub Form1_Move(sender As Object, e As EventArgs) Handles Me.Move
-        'ResizeAndRePositionWindowAndPlayer()
-        'Console.WriteLine("Form1_Move")
     End Sub
 End Class
