@@ -33,6 +33,7 @@ Partial Class Form1
         Me.VideoToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.FromFileToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.FromURLToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.DefaultToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.DisplayToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.DisplayToolStripComboBox = New System.Windows.Forms.ToolStripComboBox()
         Me.ToolStripSeparator1 = New System.Windows.Forms.ToolStripSeparator()
@@ -62,14 +63,14 @@ Partial Class Form1
         Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
         Me.ContextMenuStrip1.ShowCheckMargin = True
         Me.ContextMenuStrip1.ShowImageMargin = False
-        Me.ContextMenuStrip1.Size = New System.Drawing.Size(128, 136)
+        Me.ContextMenuStrip1.Size = New System.Drawing.Size(181, 158)
         '
         'PausePlayToolStripMenuItem
         '
         Me.PausePlayToolStripMenuItem.Font = New System.Drawing.Font("Segoe UI", 11.25!)
         Me.PausePlayToolStripMenuItem.ForeColor = System.Drawing.Color.WhiteSmoke
         Me.PausePlayToolStripMenuItem.Name = "PausePlayToolStripMenuItem"
-        Me.PausePlayToolStripMenuItem.Size = New System.Drawing.Size(127, 24)
+        Me.PausePlayToolStripMenuItem.Size = New System.Drawing.Size(180, 24)
         Me.PausePlayToolStripMenuItem.Text = "Pause"
         '
         'MuteToolStripMenuItem
@@ -78,43 +79,53 @@ Partial Class Form1
         Me.MuteToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked
         Me.MuteToolStripMenuItem.ForeColor = System.Drawing.Color.WhiteSmoke
         Me.MuteToolStripMenuItem.Name = "MuteToolStripMenuItem"
-        Me.MuteToolStripMenuItem.Size = New System.Drawing.Size(127, 24)
+        Me.MuteToolStripMenuItem.Size = New System.Drawing.Size(180, 24)
         Me.MuteToolStripMenuItem.Text = "Mute"
         '
         'ToolStripSeparator2
         '
         Me.ToolStripSeparator2.Name = "ToolStripSeparator2"
-        Me.ToolStripSeparator2.Size = New System.Drawing.Size(124, 6)
+        Me.ToolStripSeparator2.Size = New System.Drawing.Size(177, 6)
         '
         'VideoToolStripMenuItem
         '
-        Me.VideoToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.FromFileToolStripMenuItem, Me.FromURLToolStripMenuItem})
+        Me.VideoToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.FromFileToolStripMenuItem, Me.FromURLToolStripMenuItem, Me.DefaultToolStripMenuItem})
         Me.VideoToolStripMenuItem.Font = New System.Drawing.Font("Segoe UI", 11.25!)
         Me.VideoToolStripMenuItem.ForeColor = System.Drawing.Color.WhiteSmoke
         Me.VideoToolStripMenuItem.Name = "VideoToolStripMenuItem"
-        Me.VideoToolStripMenuItem.Size = New System.Drawing.Size(127, 24)
+        Me.VideoToolStripMenuItem.Size = New System.Drawing.Size(180, 24)
         Me.VideoToolStripMenuItem.Text = "Video"
         '
         'FromFileToolStripMenuItem
         '
+        Me.FromFileToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(CType(CType(54, Byte), Integer), CType(CType(57, Byte), Integer), CType(CType(62, Byte), Integer))
         Me.FromFileToolStripMenuItem.ForeColor = System.Drawing.Color.WhiteSmoke
         Me.FromFileToolStripMenuItem.Name = "FromFileToolStripMenuItem"
-        Me.FromFileToolStripMenuItem.Size = New System.Drawing.Size(142, 24)
+        Me.FromFileToolStripMenuItem.Size = New System.Drawing.Size(180, 24)
         Me.FromFileToolStripMenuItem.Text = "From File"
         '
         'FromURLToolStripMenuItem
         '
+        Me.FromURLToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(CType(CType(54, Byte), Integer), CType(CType(57, Byte), Integer), CType(CType(62, Byte), Integer))
         Me.FromURLToolStripMenuItem.ForeColor = System.Drawing.Color.WhiteSmoke
         Me.FromURLToolStripMenuItem.Name = "FromURLToolStripMenuItem"
-        Me.FromURLToolStripMenuItem.Size = New System.Drawing.Size(142, 24)
+        Me.FromURLToolStripMenuItem.Size = New System.Drawing.Size(180, 24)
         Me.FromURLToolStripMenuItem.Text = "From URL"
+        '
+        'DefaultToolStripMenuItem
+        '
+        Me.DefaultToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(CType(CType(54, Byte), Integer), CType(CType(57, Byte), Integer), CType(CType(62, Byte), Integer))
+        Me.DefaultToolStripMenuItem.ForeColor = System.Drawing.Color.WhiteSmoke
+        Me.DefaultToolStripMenuItem.Name = "DefaultToolStripMenuItem"
+        Me.DefaultToolStripMenuItem.Size = New System.Drawing.Size(180, 24)
+        Me.DefaultToolStripMenuItem.Text = "Default"
         '
         'DisplayToolStripMenuItem
         '
         Me.DisplayToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.DisplayToolStripComboBox})
         Me.DisplayToolStripMenuItem.ForeColor = System.Drawing.Color.WhiteSmoke
         Me.DisplayToolStripMenuItem.Name = "DisplayToolStripMenuItem"
-        Me.DisplayToolStripMenuItem.Size = New System.Drawing.Size(127, 24)
+        Me.DisplayToolStripMenuItem.Size = New System.Drawing.Size(180, 24)
         Me.DisplayToolStripMenuItem.Text = "Display"
         '
         'DisplayToolStripComboBox
@@ -129,18 +140,19 @@ Partial Class Form1
         'ToolStripSeparator1
         '
         Me.ToolStripSeparator1.Name = "ToolStripSeparator1"
-        Me.ToolStripSeparator1.Size = New System.Drawing.Size(124, 6)
+        Me.ToolStripSeparator1.Size = New System.Drawing.Size(177, 6)
         '
         'ExitToolStripMenuItem
         '
         Me.ExitToolStripMenuItem.Font = New System.Drawing.Font("Segoe UI", 11.25!)
         Me.ExitToolStripMenuItem.ForeColor = System.Drawing.Color.WhiteSmoke
         Me.ExitToolStripMenuItem.Name = "ExitToolStripMenuItem"
-        Me.ExitToolStripMenuItem.Size = New System.Drawing.Size(127, 24)
+        Me.ExitToolStripMenuItem.Size = New System.Drawing.Size(180, 24)
         Me.ExitToolStripMenuItem.Text = "Exit"
         '
         'OpenFileDialog1
         '
+        Me.OpenFileDialog1.Filter = "Media Files|.mp3;.wma;.wav;.avi;.mpg;.mpeg;.mp4;.wmv"
         '
         'AxWindowsMediaPlayer1
         '
@@ -186,4 +198,5 @@ Partial Class Form1
     Friend WithEvents ToolStripSeparator2 As ToolStripSeparator
     Friend WithEvents DisplayToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents DisplayToolStripComboBox As ToolStripComboBox
+    Friend WithEvents DefaultToolStripMenuItem As ToolStripMenuItem
 End Class

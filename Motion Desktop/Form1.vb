@@ -37,6 +37,8 @@ Public Class Form1
         AxWindowsMediaPlayer1.UseWaitCursor = False
         AxWindowsMediaPlayer1.settings.setMode("loop", True)
 
+        OpenFileDialog1.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos)
+
         DisplayToolStripComboBox.BeginUpdate()
         For Each Display As Display In Display.GetDisplays()
             If Display.IsGDIPrimary Then
@@ -153,7 +155,7 @@ Public Class Form1
     Private Sub FromURLToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles FromURLToolStripMenuItem.Click
         Dim strInput As String
         strInput = InputBox("Set Video URL", "Video URL")
-        If Not strInput = "" Then
+        If strInput.StartsWith("https://") Or strInput.StartsWith("http://") Then
             AxWindowsMediaPlayer1.URL = strInput
             File.WriteAllText(Application.StartupPath & "\Video Location.cfg", strInput)
         End If
@@ -163,6 +165,15 @@ Public Class Form1
     Private Sub OpenFileDialog1_FileOk(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles OpenFileDialog1.FileOk
         AxWindowsMediaPlayer1.URL = OpenFileDialog1.FileName
         File.WriteAllText(Application.StartupPath & "\Video Location.cfg", OpenFileDialog1.FileName)
+    End Sub
+
+    'DefaultToolStripMenuItem - Click
+    Private Sub DefaultToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles DefaultToolStripMenuItem.Click
+        Dim DefaultVideo As String = Application.StartupPath & "\Default.mp4"
+        If File.Exists(DefaultVideo) Then
+            AxWindowsMediaPlayer1.URL = DefaultVideo
+        File.WriteAllText(Application.StartupPath & "\Video Location.cfg", DefaultVideo)
+        End If
     End Sub
 
     ' MuteToolStripMenuItem - Click
