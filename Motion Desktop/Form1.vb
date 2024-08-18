@@ -1,31 +1,82 @@
 ﻿Imports System.IO
+Imports System.Runtime.InteropServices
 Imports AxWMPLib
+Imports Microsoft.Win32
 Imports WindowsDisplayAPI
 
 Public Class Form1
-    Public Const HWND_BOTTOM = 1
-    Public Const HWND_NOTOPMOST = -2
-    Public Const HWND_TOP = 0
-    Public Const HWND_TOPMOST = -1
-    Public Const SWP_NOMOVE = &H2
-    Public Const SWP_NOSIZE = &H1
-    Public Const SWP_NOACTIVATE = &H10
-    Public Const SWP_SHOWWINDOW = &H40
-    Public Const SWP_NOREDRAW = &H8
-    Public Const SWP_NOZORDER = &H4
-    Public Const SWP_NOREPOSITION = &H200
-    Declare Auto Function SetWindowPos Lib "user32" (ByVal hWnd As IntPtr, ByVal hWndInsertAfter As IntPtr, ByVal X As Integer, ByVal Y As Integer, ByVal cx As Integer, ByVal cy As Integer, ByVal uFlags As UInteger) As Boolean
+    <DllImport("user32.dll", SetLastError:=True, CharSet:=CharSet.Auto)>
+    Private Shared Function FindWindow(lpClassName As String, lpWindowName As String) As IntPtr
+    End Function
 
+    <DllImport("user32.dll", SetLastError:=True)>
+    Private Shared Function FindWindowEx(hWndParent As IntPtr, hWndChildAfter As IntPtr, lpszClass As String, lpszWindow As String) As IntPtr
+    End Function
+
+    <DllImport("user32.dll", SetLastError:=True)>
+    Private Shared Function SetParent(hWndChild As IntPtr, hWndNewParent As IntPtr) As IntPtr
+    End Function
+
+    <DllImport("user32.dll", SetLastError:=True)>
+    Private Shared Function SetWindowPos(hWnd As IntPtr, hWndInsertAfter As IntPtr, X As Integer, Y As Integer, cx As Integer, cy As Integer, uFlags As UInteger) As Boolean
+    End Function
+
+    <DllImport("user32.dll", SetLastError:=True)>
+    Private Shared Function GetShellWindow() As IntPtr
+    End Function
+
+    <DllImport("user32.dll", SetLastError:=True)>
+    Private Shared Function ShowWindow(hWnd As IntPtr, nCmdShow As Integer) As Boolean
+    End Function
+
+    <DllImport("user32.dll", SetLastError:=True)>
+    Private Shared Function SendMessageTimeout(hWnd As IntPtr, Msg As UInteger, wParam As IntPtr, lParam As IntPtr, flags As SendMessageTimeoutFlags, timeout As UInteger, ByRef pdwResult As IntPtr) As IntPtr
+    End Function
+
+    <DllImport("user32.dll", CharSet:=CharSet.Auto)>
+    Private Shared Function SystemParametersInfo(uAction As UInteger, uParam As UInteger, lpvParam As String, fuWinIni As UInteger) As Boolean
+    End Function
+
+    <DllImport("shell32.dll")>
+    Private Shared Sub SHChangeNotify(wEventId As UInteger, uFlags As UInteger, dwItem1 As IntPtr, dwItem2 As IntPtr)
+    End Sub
+
+    Private Const SPI_GETDESKWALLPAPER As UInteger = &H73
+    Private Const SPI_SETDESKWALLPAPER As UInteger = &H14
+    Private Const SPIF_UPDATEINIFILE As UInteger = &H1
+    Private Const SPIF_SENDWININICHANGE As UInteger = &H2
+    Private originalWallpaper As String = New String(" "c, 260)
+
+    <Flags>
+    Private Enum SendMessageTimeoutFlags As UInteger
+        SMTO_NORMAL = &H0
+        SMTO_BLOCK = &H1
+        SMTO_ABORTIFHUNG = &H2
+        SMTO_NOTIMEOUTIFNOTHUNG = &H8
+        SMTO_ERRORONEXIT = &H20
+    End Enum
+
+    Private Const HWND_BOTTOM As Integer = 1
+    Private Const SWP_NOZORDER As UInteger = &H4
+    'Private Const SWP_NOMOVE As UInteger = &H2
+    'Private Const SWP_NOSIZE As UInteger = &H1
+    Private Const SWP_SHOWWINDOW As UInteger = &H40
+    Private Const SW_HIDE As Integer = 0
+    Private Const SW_SHOW As Integer = 5
+    Public Const SWP_NOACTIVATE As UInteger = &H10
     Public MYDisplay As Display = Display.GetDisplays(0)
     Public MYScreen As Screen = MYDisplay.GetScreen()
-
     Dim FormLoadLock As Boolean = True
+    'Private Const WM_SETTINGCHANGE As UInteger = &H1A
 
     ' Form1 - Load
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        ' Get the current wallpaper
+        SystemParametersInfo(SPI_GETDESKWALLPAPER, 260, originalWallpaper, 0)
 
         ContextMenuStrip1.Renderer = New ToolStripProfessionalRenderer(New ColorTable())
 
+        ' Initialize media player settings
         AxWindowsMediaPlayer1.settings.volume = 100
         AxWindowsMediaPlayer1.settings.mute = True
         AxWindowsMediaPlayer1.uiMode = "none"
@@ -39,7 +90,51 @@ Public Class Form1
 
         OpenFileDialog1.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos)
 
+        ' Get the Progman window handle
+        Dim progman As IntPtr = FindWindow("Progman", Nothing)
+
+        ' Send a message to Progman to spawn a WorkerW
+        Dim result As IntPtr = IntPtr.Zero
+        Dim msg As UInteger = &H52C  ' The message to spawn a WorkerW
+        SendMessageTimeout(progman, msg, IntPtr.Zero, IntPtr.Zero, SendMessageTimeoutFlags.SMTO_NORMAL, 1000, result)
+
+        ' Find the WorkerW window handle
+        Dim workerw As IntPtr = IntPtr.Zero
+        Dim desktopHandle As IntPtr = FindWindow("Progman", Nothing)
+        workerw = FindWindowEx(IntPtr.Zero, IntPtr.Zero, "WorkerW", Nothing)
+        While (workerw <> IntPtr.Zero)
+            Dim shellviewWin As IntPtr = FindWindowEx(workerw, IntPtr.Zero, "SHELLDLL_DefView", Nothing)
+            If (shellviewWin <> IntPtr.Zero) Then
+                desktopHandle = FindWindowEx(IntPtr.Zero, workerw, "WorkerW", Nothing)
+            End If
+            workerw = FindWindowEx(IntPtr.Zero, workerw, "WorkerW", Nothing)
+        End While
+
+        'UpdateDisplayList()
+
+        ' Set the form as a child of the WorkerW window
+        SetParent(Me.Handle, desktopHandle)
+        'ResizeAndRePositionWindowAndPlayer()
+        'ShowWindow(Me.Handle, SW_SHOW)
+
+        ' Start the video
+        LoadVideoLocationFile()
+
+        ' Attach DisplaySettingsChanged event handler to handle changes in display settings
+        AddHandler SystemEvents.DisplaySettingsChanged, AddressOf DisplaySettingsChanged
+
+        FormLoadLock = False
+    End Sub
+
+    ' UpdateDisplayList
+    Private Sub UpdateDisplayList()
+        Console.WriteLine("UpdateDisplayList()")
+        ' Unsubscribe from SelectedIndexChanged temporarily to prevent it from triggering
+        RemoveHandler DisplayToolStripComboBox.SelectedIndexChanged, AddressOf DisplayToolStripComboBox_SelectedIndexChanged
+        'FormLoadLock = True
+
         DisplayToolStripComboBox.BeginUpdate()
+        DisplayToolStripComboBox.Items.Clear()
         For Each Display As Display In Display.GetDisplays()
             If Display.IsGDIPrimary Then
                 DisplayToolStripComboBox.Items.Add(Display.ToPathDisplayTarget.FriendlyName & " (Primary)")
@@ -53,25 +148,9 @@ Public Class Form1
         MYDisplay = Display.GetDisplays(DisplayToolStripComboBox.SelectedIndex)
         MYScreen = MYDisplay.GetScreen()
 
-        ResizeAndRePositionWindowAndPlayer()
-
-        FormLoadLock = False
-
-        LoadVideoLocationFile()
-    End Sub
-
-    ' SetFormPosition
-    Public Sub SetFormPosition(ByVal hWnd As IntPtr, ByVal Position As IntPtr)
-        SetWindowPos(hWnd, Position, 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE Or SWP_SHOWWINDOW Or SWP_NOACTIVATE Or SWP_NOREDRAW) ' Or SWP_NOREPOSITION SWP_NOMOVE Or SWP_NOSIZE Or SWP_SHOWWINDOW Or SWP_NOACTIVATE Or SWP_NOREDRAW Or SWP_NOREPOSITION Or SWP_NOZORDER)
-    End Sub
-
-    ' ResizeAndRePositionWindowAndPlayer
-    Private Sub ResizeAndRePositionWindowAndPlayer()
-        Me.Size = MYScreen.WorkingArea.Size
-        Me.Location = New Point(MYScreen.WorkingArea.Left, MYScreen.WorkingArea.Top)
-        SetFormPosition(Me.Handle, CType(HWND_BOTTOM, IntPtr))
-        AxWindowsMediaPlayer1.Width = MYScreen.Bounds.Width
-        AxWindowsMediaPlayer1.Height = MYScreen.Bounds.Height
+        ' Re-subscribe to SelectedIndexChanged after updating
+        AddHandler DisplayToolStripComboBox.SelectedIndexChanged, AddressOf DisplayToolStripComboBox_SelectedIndexChanged
+        'FormLoadLock = False
     End Sub
 
     ' AxWindowsMediaPlayer1 - PlayStateChange
@@ -107,32 +186,65 @@ Public Class Form1
         End If
     End Sub
 
-    ' Form1 - LocationChanged
-    Private Sub Form1_LocationChanged(sender As Object, e As EventArgs) Handles Me.LocationChanged
-        ResizeAndRePositionWindowAndPlayer()
-        'Console.WriteLine("Form1_LocationChanged")
-    End Sub
-
-    ' Form1 - Activated
-    Private Sub Form1_Activated(sender As Object, e As EventArgs) Handles Me.Activated
-        SetFormPosition(Me.Handle, CType(HWND_BOTTOM, IntPtr))
-        'Console.WriteLine("Me.Activated")
-    End Sub
-
     ' Timer1 - Tick
     Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick
-        If AxWindowsMediaPlayer1.Ctlcontrols.currentPosition >= AxWindowsMediaPlayer1.Ctlcontrols.currentItem.duration - 0.1 Then
-            AxWindowsMediaPlayer1.Ctlcontrols.currentPosition = 0
-            'Console.WriteLine("Replay")
+        If AxWindowsMediaPlayer1.playState = WMPLib.WMPPlayState.wmppsPlaying Then
+            Dim currentPosition As Double = AxWindowsMediaPlayer1.Ctlcontrols.currentPosition
+            Dim duration As Double = AxWindowsMediaPlayer1.currentMedia.duration
+            If duration > 0 AndAlso currentPosition >= duration - 0.05 Then
+                AxWindowsMediaPlayer1.Ctlcontrols.currentPosition = 0
+            End If
         End If
     End Sub
 
-    '
-    '
-    '//ToolStripMenuItems
-    '
-    '
+    ' ResizeAndRePositionWindowAndPlayer
+    Private Sub ResizeAndRePositionWindowAndPlayer()
+        Console.WriteLine("ResizeAndRePositionWindowAndPlayer()")
+        Me.Size = MYScreen.Bounds.Size
+        Me.Location = New Point(MYScreen.Bounds.Left, MYScreen.Bounds.Top)
+        'AxWindowsMediaPlayer1.Size = MYScreen.Bounds.Size
+        SetWindowPos(Me.Handle, CType(1, IntPtr), MYScreen.Bounds.Left, MYScreen.Bounds.Top, MYScreen.Bounds.Width, MYScreen.Bounds.Height, SWP_NOZORDER Or SWP_SHOWWINDOW Or SWP_NOACTIVATE)
+        'RestoreWallpaper()
+    End Sub
 
+    ' Restore the original wallpaper
+    Private Sub RestoreWallpaper()
+        SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, originalWallpaper, SPIF_UPDATEINIFILE Or SPIF_SENDWININICHANGE)
+        Console.WriteLine("RestoreWallpaper()")
+    End Sub
+
+    ' DisplaySettingsChanged()
+    Public Sub DisplaySettingsChanged(ByVal sender As Object, ByVal e As EventArgs)
+        If Not FormLoadLock Then
+            Console.WriteLine("DisplaySettingsChanged")
+            UpdateDisplayList()
+            ResizeAndRePositionWindowAndPlayer()
+        End If
+    End Sub
+
+    ' Detach from WorkerW
+    Private Sub DetachFromWorkerW()
+        ' Get the original desktop handle
+        Dim desktopHandle As IntPtr = GetShellWindow()
+        ' Set the form's parent back to the original desktop
+        SetParent(Me.Handle, desktopHandle)
+        ' Ensure the form is hidden before closing
+        ShowWindow(Me.Handle, SW_HIDE)
+    End Sub
+
+    ' Override OnFormClosing
+    Protected Overrides Sub OnFormClosing(e As FormClosingEventArgs)
+        ' Detach the form from WorkerW
+        DetachFromWorkerW()
+        ' Restore the original wallpaper
+        RestoreWallpaper()
+        ' Call the base method
+        MyBase.OnFormClosing(e)
+    End Sub
+
+    '
+    ' ToolStripMenuItems
+    '
     ' PausePlayToolStripMenuItem - Click
     Private Sub PausePlayToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles PausePlayToolStripMenuItem.Click
         If Not AxWindowsMediaPlayer1.playState = WMPLib.WMPPlayState.wmppsPaused Then
@@ -167,12 +279,12 @@ Public Class Form1
         File.WriteAllText(Application.StartupPath & "\Video Location.cfg", OpenFileDialog1.FileName)
     End Sub
 
-    'DefaultToolStripMenuItem - Click
+    ' DefaultToolStripMenuItem - Click
     Private Sub DefaultToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles DefaultToolStripMenuItem.Click
         Dim DefaultVideo As String = Application.StartupPath & "\Default.mp4"
         If File.Exists(DefaultVideo) Then
             AxWindowsMediaPlayer1.URL = DefaultVideo
-        File.WriteAllText(Application.StartupPath & "\Video Location.cfg", DefaultVideo)
+            File.WriteAllText(Application.StartupPath & "\Video Location.cfg", DefaultVideo)
         End If
     End Sub
 
@@ -187,13 +299,14 @@ Public Class Form1
         End If
     End Sub
 
-    ' DisplayToolStripComboBox- SelectedIndexChanged
+    ' DisplayToolStripComboBox - SelectedIndexChanged
     Private Sub DisplayToolStripComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles DisplayToolStripComboBox.SelectedIndexChanged
-        If Not DisplayToolStripComboBox.SelectedIndex = -1 And FormLoadLock = False Then
+        If DisplayToolStripComboBox.SelectedIndex <> -1 AndAlso FormLoadLock = False Then
             MYDisplay = Display.GetDisplays(DisplayToolStripComboBox.SelectedIndex)
             MYScreen = MYDisplay.GetScreen()
             ResizeAndRePositionWindowAndPlayer()
-            SetFormPosition(Me.Handle, CType(HWND_BOTTOM, IntPtr))
+            RestoreWallpaper()
+            Console.WriteLine("DisplayToolStripComboBox.SelectedIndexChanged")
         End If
     End Sub
 
