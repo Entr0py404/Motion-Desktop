@@ -1,9 +1,4 @@
-﻿Imports System.IO
-Imports System.Runtime.InteropServices
-Imports AxWMPLib
-Imports Microsoft.Win32
-Imports WindowsDisplayAPI
-
+﻿
 Public Class Form1
     <DllImport("user32.dll", SetLastError:=True, CharSet:=CharSet.Auto)>
     Private Shared Function FindWindow(lpClassName As String, lpWindowName As String) As IntPtr
@@ -37,10 +32,6 @@ Public Class Form1
     Private Shared Function SystemParametersInfo(uAction As UInteger, uParam As UInteger, lpvParam As String, fuWinIni As UInteger) As Boolean
     End Function
 
-    <DllImport("shell32.dll")>
-    Private Shared Sub SHChangeNotify(wEventId As UInteger, uFlags As UInteger, dwItem1 As IntPtr, dwItem2 As IntPtr)
-    End Sub
-
     Private Const SPI_GETDESKWALLPAPER As UInteger = &H73
     Private Const SPI_SETDESKWALLPAPER As UInteger = &H14
     Private Const SPIF_UPDATEINIFILE As UInteger = &H1
@@ -56,18 +47,13 @@ Public Class Form1
         SMTO_ERRORONEXIT = &H20
     End Enum
 
-    Private Const HWND_BOTTOM As Integer = 1
     Private Const SWP_NOZORDER As UInteger = &H4
-    'Private Const SWP_NOMOVE As UInteger = &H2
-    'Private Const SWP_NOSIZE As UInteger = &H1
     Private Const SWP_SHOWWINDOW As UInteger = &H40
     Private Const SW_HIDE As Integer = 0
-    Private Const SW_SHOW As Integer = 5
     Public Const SWP_NOACTIVATE As UInteger = &H10
     Public MYDisplay As Display = Display.GetDisplays(0)
     Public MYScreen As Screen = MYDisplay.GetScreen()
     Dim FormLoadLock As Boolean = True
-    'Private Const WM_SETTINGCHANGE As UInteger = &H1A
 
     ' Form1 - Load
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
@@ -114,8 +100,6 @@ Public Class Form1
 
         ' Set the form as a child of the WorkerW window
         SetParent(Me.Handle, desktopHandle)
-        'ResizeAndRePositionWindowAndPlayer()
-        'ShowWindow(Me.Handle, SW_SHOW)
 
         ' Start the video
         LoadVideoLocationFile()
@@ -131,7 +115,6 @@ Public Class Form1
         Console.WriteLine("UpdateDisplayList()")
         ' Unsubscribe from SelectedIndexChanged temporarily to prevent it from triggering
         RemoveHandler DisplayToolStripComboBox.SelectedIndexChanged, AddressOf DisplayToolStripComboBox_SelectedIndexChanged
-        'FormLoadLock = True
 
         DisplayToolStripComboBox.BeginUpdate()
         DisplayToolStripComboBox.Items.Clear()
@@ -150,7 +133,6 @@ Public Class Form1
 
         ' Re-subscribe to SelectedIndexChanged after updating
         AddHandler DisplayToolStripComboBox.SelectedIndexChanged, AddressOf DisplayToolStripComboBox_SelectedIndexChanged
-        'FormLoadLock = False
     End Sub
 
     ' AxWindowsMediaPlayer1 - PlayStateChange
@@ -202,9 +184,7 @@ Public Class Form1
         Console.WriteLine("ResizeAndRePositionWindowAndPlayer()")
         Me.Size = MYScreen.Bounds.Size
         Me.Location = New Point(MYScreen.Bounds.Left, MYScreen.Bounds.Top)
-        'AxWindowsMediaPlayer1.Size = MYScreen.Bounds.Size
         SetWindowPos(Me.Handle, CType(1, IntPtr), MYScreen.Bounds.Left, MYScreen.Bounds.Top, MYScreen.Bounds.Width, MYScreen.Bounds.Height, SWP_NOZORDER Or SWP_SHOWWINDOW Or SWP_NOACTIVATE)
-        'RestoreWallpaper()
     End Sub
 
     ' Restore the original wallpaper
