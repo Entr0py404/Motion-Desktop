@@ -131,6 +131,8 @@ Public Class Form1
         MYDisplay = Display.GetDisplays(DisplayToolStripComboBox.SelectedIndex)
         MYScreen = MYDisplay.GetScreen()
 
+        NotifyIcon1.Text = "Motion Desktop - " & MYDisplay.ToPathDisplayTarget.FriendlyName
+
         ' Re-subscribe to SelectedIndexChanged after updating
         AddHandler DisplayToolStripComboBox.SelectedIndexChanged, AddressOf DisplayToolStripComboBox_SelectedIndexChanged
     End Sub
